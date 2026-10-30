@@ -32,8 +32,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * SSE subscriber for gateway {@code /events} ({@code event: panelevent}), same channel
- * the Mono ServiceStack gateway used for panel events and {@code msg.info/warn/error}.
+ * SSE subscriber for gateway {@code /events} ({@code event: panelevent}) — panel pushes
+ * and {@code msg.info/warn/error} log lines.
  *
  * @author Karel Goderis - Initial contribution
  */

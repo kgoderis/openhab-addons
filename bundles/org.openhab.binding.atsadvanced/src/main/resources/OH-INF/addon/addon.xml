@@ -4,18 +4,9 @@
 	xsi:schemaLocation="https://openhab.org/schemas/addon/v1.0.0 https://openhab.org/schemas/addon-1.0.0.xsd">
 
 	<type>binding</type>
-	<name>ATSAdvanced Binding</name>
-	<description>This is the binding for ATSAdvanced</description>
-
-	<config-description>
-		<parameter name="ats" type="text">
-			<label>ATS</label>
-			<description>Location of the ATS Gateway binary</description>
-		</parameter>
-		<parameter name="mono" type="text">
-			<label>Mono</label>
-			<description>Location of the mono binary</description>
-		</parameter>
-	</config-description>
+	<name>ATS Advanced Binding</name>
+	<description>Connects openHAB to UTC/Carrier/FireClass ATS Advanced intrusion panels via the AtsAdvancedGateway
+		(.NET) HTTP service and ats.advanced.drv. Supports areas, zones, outputs, RAS/DGP, system status, triggers, event
+		log, and C&amp;C control sessions.</description>
 
 </addon:addon>

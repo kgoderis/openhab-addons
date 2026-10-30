@@ -33,8 +33,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * HTTP + SSE client for the external ATS Advanced dumb gateway (.NET 8 or legacy).
- * No ServiceStack.
+ * HTTP + SSE client for the AtsAdvancedGateway process.
  *
  * @author Karel Goderis - Initial contribution
  */

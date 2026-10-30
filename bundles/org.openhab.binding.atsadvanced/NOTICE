@@ -11,3 +11,11 @@ https://www.eclipse.org/legal/epl-2.0/.
 == Source Code
 
 https://github.com/openhab/openhab-addons
+
+== Third-party Content
+
+AtsAdvancedGateway includes proprietary UTC/Carrier/FireClass NAce assemblies
+(`AtsAdvancedGateway/Library/*.dll`) and the panel driver definition
+`AtsAdvancedGateway/ats.advanced.drv`. Those binaries are redistributed solely to
+operate the gateway against ATS Advanced panels; their ownership and license
+remain with the respective vendors.

@@ -13,18 +13,12 @@
 package org.openhab.binding.atsadvanced.internal;
 
 import java.math.BigDecimal;
-import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.binding.atsadvanced.internal.discovery.ATSadvancedDiscoveryService;
 import org.openhab.binding.atsadvanced.internal.handler.AreaHandler;
 import org.openhab.binding.atsadvanced.internal.handler.DgpHandler;
 import org.openhab.binding.atsadvanced.internal.handler.NamedReadOnlyHandler;
@@ -34,7 +28,6 @@ import org.openhab.binding.atsadvanced.internal.handler.RasHandler;
 import org.openhab.binding.atsadvanced.internal.handler.StatObjectHandler;
 import org.openhab.binding.atsadvanced.internal.handler.ZoneHandler;
 import org.openhab.core.config.core.Configuration;
-import org.openhab.core.config.discovery.DiscoveryService;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
@@ -42,16 +35,19 @@ import org.openhab.core.thing.ThingUID;
 import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Component;
 
+/**
+ * Creates handlers for ATS Advanced things. Discovery is registered via
+ * {@link PanelHandler#getServices()} ({@code ThingHandlerService}).
+ *
+ * @author Karel Goderis - Initial contribution
+ */
 @NonNullByDefault
 @Component(service = ThingHandlerFactory.class, configurationPid = "binding.atsadvanced")
 public class ATSadvancedHandlerFactory extends BaseThingHandlerFactory {
 
-    @SuppressWarnings("null")
-    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Collections.unmodifiableSet(Stream
+    private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Stream
             .of(ATSadvancedBindingConstants.THING_TYPE_PANEL, ATSadvancedBindingConstants.THING_TYPE_AREA,
                     ATSadvancedBindingConstants.THING_TYPE_ZONE, ATSadvancedBindingConstants.THING_TYPE_OUTPUT,
                     ATSadvancedBindingConstants.THING_TYPE_RAS, ATSadvancedBindingConstants.THING_TYPE_DGP,
@@ -59,21 +55,7 @@ public class ATSadvancedHandlerFactory extends BaseThingHandlerFactory {
                     ATSadvancedBindingConstants.THING_TYPE_CS, ATSadvancedBindingConstants.THING_TYPE_TRIGGER,
                     ATSadvancedBindingConstants.THING_TYPE_USER, ATSadvancedBindingConstants.THING_TYPE_USERGROUP,
                     ATSadvancedBindingConstants.THING_TYPE_FILTER, ATSadvancedBindingConstants.THING_TYPE_DIALLER)
-            .collect(Collectors.toSet()));
-
-    private Map<ThingUID, ServiceRegistration<?>> discoveryServiceRegs = new HashMap<>();
-    private String monoPath = "";
-    private String atsPath = "";
-
-    @Override
-    protected void activate(ComponentContext componentContext) {
-        super.activate(componentContext);
-        Dictionary<String, Object> properties = componentContext.getProperties();
-        Object mono = properties.get("mono");
-        Object ats = properties.get("ats");
-        monoPath = mono instanceof String s ? s : "";
-        atsPath = ats instanceof String s ? s : "";
-    }
+            .collect(Collectors.toSet());
 
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
@@ -137,9 +119,7 @@ public class ATSadvancedHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID type = thing.getThingTypeUID();
         if (type.equals(ATSadvancedBindingConstants.THING_TYPE_PANEL)) {
-            PanelHandler panel = new PanelHandler((Bridge) thing, monoPath, atsPath);
-            registerATSadvancedDiscoveryService(panel);
-            return panel;
+            return new PanelHandler((Bridge) thing);
         } else if (type.equals(ATSadvancedBindingConstants.THING_TYPE_AREA)) {
             return new AreaHandler(thing);
         } else if (type.equals(ATSadvancedBindingConstants.THING_TYPE_ZONE)) {
@@ -160,25 +140,6 @@ public class ATSadvancedHandlerFactory extends BaseThingHandlerFactory {
         return null;
     }
 
-    @SuppressWarnings("null")
-    private synchronized void registerATSadvancedDiscoveryService(PanelHandler bridgeHandler) {
-        ATSadvancedDiscoveryService discoveryService = new ATSadvancedDiscoveryService(bridgeHandler);
-        this.discoveryServiceRegs.put(bridgeHandler.getThing().getUID(), bundleContext
-                .registerService(DiscoveryService.class.getName(), discoveryService, new Hashtable<String, Object>()));
-    }
-
-    @Override
-    protected synchronized void removeHandler(ThingHandler thingHandler) {
-        if (thingHandler instanceof PanelHandler) {
-            @Nullable
-            ServiceRegistration<?> serviceReg = this.discoveryServiceRegs.get(thingHandler.getThing().getUID());
-            if (serviceReg != null) {
-                serviceReg.unregister();
-                discoveryServiceRegs.remove(thingHandler.getThing().getUID());
-            }
-        }
-    }
-
     private @Nullable ThingUID getPanelUID(ThingTypeUID thingTypeUID, @Nullable ThingUID thingUID,
             Configuration configuration) {
         if (thingUID == null) {
@@ -196,7 +157,10 @@ public class ATSadvancedHandlerFactory extends BaseThingHandlerFactory {
         if (thingUID != null) {
             return thingUID;
         }
+        if (bridgeUID == null) {
+            throw new IllegalArgumentException("Child thing of type " + thingTypeUID + " requires a bridge.");
+        }
         BigDecimal id = (BigDecimal) configuration.get(numberKey);
-        return new ThingUID(thingTypeUID, prefix + id, bridgeUID.getId());
+        return new ThingUID(thingTypeUID, bridgeUID.getId(), prefix + id);
     }
 }

@@ -14,12 +14,6 @@ package org.openhab.binding.atsadvanced.internal.handler;
 
 import static org.openhab.binding.atsadvanced.internal.ATSadvancedBindingConstants.MAX_NUMBER_AREAS;
 
-import java.io.BufferedReader;
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStreamReader;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
@@ -30,6 +24,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.BitSet;
+import java.util.Collection;
 import java.util.Date;
 import java.util.Deque;
 import java.util.HashMap;
@@ -42,15 +37,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
-import org.apache.commons.exec.CommandLine;
-import org.apache.commons.exec.DefaultExecuteResultHandler;
-import org.apache.commons.exec.DefaultExecutor;
-import org.apache.commons.exec.ExecuteException;
-import org.apache.commons.exec.ExecuteWatchdog;
-import org.apache.commons.exec.LogOutputStream;
-import org.apache.commons.exec.ProcessDestroyer;
-import org.apache.commons.exec.PumpStreamHandler;
-import org.apache.commons.exec.ShutdownHookProcessDestroyer;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
@@ -70,6 +56,7 @@ import org.openhab.binding.atsadvanced.internal.PanelClient.Message;
 import org.openhab.binding.atsadvanced.internal.PanelClient.MessageResponse;
 import org.openhab.binding.atsadvanced.internal.PanelClient.Property;
 import org.openhab.binding.atsadvanced.internal.StatObjectType;
+import org.openhab.binding.atsadvanced.internal.discovery.ATSadvancedDiscoveryService;
 import org.openhab.binding.atsadvanced.internal.gateway.AtsGatewayClient;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.StringType;
@@ -78,6 +65,7 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.binding.BaseBridgeHandler;
+import org.openhab.core.thing.binding.ThingHandlerService;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.RefreshType;
 import org.slf4j.Logger;
@@ -93,13 +81,10 @@ public class PanelHandler extends BaseBridgeHandler {
 
     // List of Configuration constants
     public static final String IP_ADDRESS = "ipAddress";
-    public static final String OPENHAB_HOST = "openhab";
     public static final String PORT_NUMBER = "portNumber";
-    public static final String GATEWAY_PORT = "gatewayPortNumber";
     public static final String GATEWAY_URL = "gatewayUrl";
-    public static final String EVENT_LOGGER_PORT = "eventLoggerPortNumber";
     public static final String PIN = "pin";
-    /** Default encryption password accepted by the Net8 / Mono gateways (52 zeros). */
+    /** Default encryption password accepted by the gateway (52 zeros). */
     private static final String PANEL_PASSWORD = "0".repeat(52);
 
     private final Logger logger = LoggerFactory.getLogger(PanelHandler.class);
@@ -109,26 +94,18 @@ public class PanelHandler extends BaseBridgeHandler {
     private static int HEART_BEAT = 10000;
     private static int RETRIES = 1;
     private static int TIME_OUT = 2000;
-    private static int GATEWAY_START_TIME_OUT = 3000;
 
     private ScheduledFuture<?> connectionJob;
     private ScheduledFuture<?> pollingJob;
     private AtsGatewayClient client;
     private String lastError = "";
     private String gatewayURL;
-    private String monoPath;
-    private String atsPath;
-    private boolean externalGateway = false;
-    private boolean gatewayProcessStarted = false;
+    private boolean gatewayReady = false;
     private boolean panelConnected = false;
     private boolean userLoggedIn = false;
     private boolean monitorStarted = false;
     private boolean logsOpened = false;
     private boolean clientsSetUp = false;
-
-    private final ProcessDestroyer shutdownHookProcessDestroyer = new LoggingShutdownHookProcessDestroyer();
-    private final DefaultExecuteResultHandler resultHandler = new GatewayExecuteResultHandler();
-    private final ExecuteWatchdog watchDog = new ExecuteWatchdog(ExecuteWatchdog.INFINITE_TIMEOUT);
 
     private List<PanelStatusListener> panelStatusListeners = new CopyOnWriteArrayList<>();
     private List<ZoneStatusListener> zoneStatusListeners = new CopyOnWriteArrayList<>();
@@ -138,7 +115,6 @@ public class PanelHandler extends BaseBridgeHandler {
     private List<DgpStatusListener> dgpStatusListeners = new CopyOnWriteArrayList<>();
     private List<ObjectStatusListener> objectStatusListeners = new CopyOnWriteArrayList<>();
 
-    private ReentrantLock GatewayProcessLock = new ReentrantLock();
     /** Serialize C&amp;C sessions (createCC.* → fnCC.* → destroyCC.SESSION). */
     private final ReentrantLock controlSessionLock = new ReentrantLock();
     /** Active walk-test session (0 = none). Destroyed on stop or bridge disconnect. */
@@ -148,10 +124,13 @@ public class PanelHandler extends BaseBridgeHandler {
     /** Newest-first buffer for {@code logHistory} (live monitor + panel log reload). */
     private final Deque<String> logHistoryBuffer = new ArrayDeque<>();
 
-    public PanelHandler(Bridge bridge, @Nullable String monoPath, @Nullable String atsPath) {
+    public PanelHandler(Bridge bridge) {
         super(bridge);
-        this.monoPath = monoPath != null ? monoPath : "";
-        this.atsPath = atsPath != null ? atsPath : "";
+    }
+
+    @Override
+    public Collection<Class<? extends ThingHandlerService>> getServices() {
+        return List.of(ATSadvancedDiscoveryService.class);
     }
 
     @Override
@@ -234,7 +213,7 @@ public class PanelHandler extends BaseBridgeHandler {
             clientsSetUp = false;
         }
 
-        stopGatewayProcess();
+        gatewayReady = false;
 
         super.dispose();
     }
@@ -358,7 +337,7 @@ public class PanelHandler extends BaseBridgeHandler {
     }
 
     public boolean isGatewayStarted() {
-        return gatewayProcessStarted;
+        return gatewayReady;
     }
 
     public String getLastError() {
@@ -470,205 +449,34 @@ public class PanelHandler extends BaseBridgeHandler {
         }
     }
 
-    private String convertStringArrayToString(String[] strArr, String delimiter) {
-        StringBuilder sb = new StringBuilder();
-        for (String str : strArr)
-            sb.append(str).append(delimiter);
-        return sb.substring(0, sb.length() - 1);
-    }
 
-    private boolean isExternalGatewayConfigured() {
-        Object url = getConfig().get(GATEWAY_URL);
-        return url instanceof String s && !s.isBlank();
-    }
-
-    /**
-     * Prefer an already-running dumb gateway ({@code gatewayUrl}). Fall back to spawning the legacy Mono process.
-     */
     private void ensureGatewayAvailable() {
-        if (gatewayProcessStarted) {
+        if (gatewayReady) {
             return;
         }
 
-        if (isExternalGatewayConfigured()) {
-            gatewayURL = ((String) getConfig().get(GATEWAY_URL)).trim();
-            externalGateway = true;
-            logger.info("Using external ATS Advanced gateway at '{}'", gatewayURL);
-            try {
-                try (AtsGatewayClient probe = new AtsGatewayClient(gatewayURL)) {
-                    if (!probe.isHealthy()) {
-                        updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
-                                "Gateway health check failed at " + gatewayURL);
-                        return;
-                    }
-                }
-                gatewayProcessStarted = true;
-            } catch (Exception e) {
-                logger.warn("External gateway not reachable at '{}': {}", gatewayURL, e.getMessage());
-                updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
-            }
+        Object url = getConfig().get(GATEWAY_URL);
+        if (!(url instanceof String s) || s.isBlank()) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "gatewayUrl is required (e.g. http://127.0.0.1:18137)");
             return;
         }
 
-        startGatewayProcess();
-    }
-
-    private void startGatewayProcess() {
-
-        if (!gatewayProcessStarted) {
-
-            GatewayProcessLock.lock();
-
-            try {
-                externalGateway = false;
-                gatewayURL = "http://" + (String) getConfig().get(OPENHAB_HOST) + ":" + getConfig().get(GATEWAY_PORT);
-                logger.info("The ATS Advanced Panel handler will connect to the Gateway at '{}'", gatewayURL);
-
-                DefaultExecutor executor = new DefaultExecutor();
-                executor.setExitValue(0);
-
-                PumpStreamHandler psh = new PumpStreamHandler(new GatewayLogHandler(logger, 0),
-                        new GatewayLogHandler(logger, 1));
-                // PumpStreamHandler psh = new PumpStreamHandler(new GatewayLogHangler(logger, 0));
-                executor.setStreamHandler(psh);
-                executor.setProcessDestroyer(shutdownHookProcessDestroyer);
-                executor.setExitValue(0);
-                executor.setWatchdog(watchDog);
-
-                File file = new File(atsPath);
-                executor.setWorkingDirectory(file);
-
-                CommandLine commandLine = new CommandLine(monoPath);
-                commandLine.addArgument("--debug");
-                commandLine.addArgument("ATSAdvancedGateway.exe");
-                commandLine.addArgument("-p");
-                commandLine.addArgument(((BigDecimal) getConfig().get(GATEWAY_PORT)).toString());
-                commandLine.addArgument("-d");
-                commandLine.addArgument("ats.advanced.drv");
-                Map<String, String> environment = new HashMap<String, String>();
-
-                checkAndKillExistingProcessRunning(commandLine);
-
-                try {
-                    logger.info("Starting the Gateway : '{}'",
-                            convertStringArrayToString(commandLine.toStrings(), " "));
-                    executor.execute(commandLine, environment, resultHandler);
-                } catch (IOException e) {
-                    logger.error("An exception occurred while starting the Gateway : '{}'", e.getMessage());
-                }
-
-                try {
-                    Thread.sleep(GATEWAY_START_TIME_OUT);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
-                checkProcessRunning(commandLine);
-            } finally {
-                GatewayProcessLock.unlock();
-            }
-        }
-    }
-
-    private void checkProcessRunning(CommandLine commandline) {
+        gatewayURL = s.trim();
+        logger.info("Using ATS Advanced gateway at '{}'", gatewayURL);
         try {
-            String line;
-            DefaultExecutor executor = new DefaultExecutor();
-            CommandLine psCmd = new CommandLine("ps");
-            psCmd.addArgument("aux");
-
-            ByteArrayOutputStream err = new ByteArrayOutputStream();
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            PumpStreamHandler p = new PumpStreamHandler(out, err);
-            executor.setStreamHandler(p);
-
-            executor.execute(psCmd);
-
-            BufferedReader input = new BufferedReader(
-                    new InputStreamReader(new ByteArrayInputStream(out.toByteArray())));
-
-            while ((line = input.readLine()) != null) {
-                logger.trace("Process check : '{}' vs '{}'", line,
-                        convertStringArrayToString(commandline.toStrings(), " "));
-
-                if (line.contains(convertStringArrayToString(commandline.toStrings(), " "))) {
-                    String[] entry = StringUtils.split(line);
-                    logger.info("The Gateway started with PID {} : '{}'", entry[1],
-                            convertStringArrayToString(commandline.toStrings(), " "));
+            try (AtsGatewayClient probe = new AtsGatewayClient(gatewayURL)) {
+                if (!probe.isHealthy()) {
+                    updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR,
+                            "Gateway health check failed at " + gatewayURL);
                     return;
                 }
             }
-            input.close();
-            logger.warn("The Gateway did not start : '{}'", convertStringArrayToString(commandline.toStrings(), " "));
-        } catch (Exception err) {
-            logger.error("An exception occurred while checking the Gateway : '{}'", err.getMessage());
+            gatewayReady = true;
+        } catch (Exception e) {
+            logger.warn("Gateway not reachable at '{}': {}", gatewayURL, e.getMessage());
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, e.getMessage());
         }
-    }
-
-    private void checkAndKillExistingProcessRunning(CommandLine commandline) {
-        try {
-            String line;
-            DefaultExecutor executor = new DefaultExecutor();
-            CommandLine psCmd = new CommandLine("ps");
-            psCmd.addArgument("aux");
-
-            ByteArrayOutputStream err = new ByteArrayOutputStream();
-            ByteArrayOutputStream out = new ByteArrayOutputStream();
-            PumpStreamHandler p = new PumpStreamHandler(out, err);
-            executor.setStreamHandler(p);
-
-            executor.execute(psCmd);
-
-            BufferedReader input = new BufferedReader(
-                    new InputStreamReader(new ByteArrayInputStream(out.toByteArray())));
-
-            while ((line = input.readLine()) != null) {
-
-                logger.trace("Process check : '{}' vs '{}'", line,
-                        convertStringArrayToString(commandline.toStrings(), " "));
-
-                if (line.contains(convertStringArrayToString(commandline.toStrings(), " "))) {
-                    String[] entry = StringUtils.split(line);
-
-                    CommandLine commandLine = new CommandLine("/bin/kill");
-                    commandLine.addArgument("-9");
-                    commandLine.addArgument(entry[1]);
-                    int result = executor.execute(commandLine);
-                    if (result == 0) {
-                        logger.info("Killed a running Gateway with PID {}", entry[1]);
-                    } else {
-                        logger.warn("Killing a running Gateway with PID {} exited with code : '{}'", entry[1], result);
-                    }
-                }
-            }
-            input.close();
-        } catch (Exception err) {
-            logger.error("An exception occurred while checking and killing existing Gateways : '{}'", err.getMessage());
-        }
-    }
-
-    private void stopGatewayProcess() {
-        if (externalGateway) {
-            gatewayProcessStarted = false;
-            return;
-        }
-
-        if (!gatewayProcessStarted) {
-            logger.debug("The Gateway was already stopped (or never started)");
-            return;
-        }
-
-        logger.debug("Destroying the Gateway");
-        watchDog.destroyProcess();
-
-        try {
-            // Safer to waitFor() after destroy()
-            resultHandler.waitFor();
-        } catch (InterruptedException e) {
-            logger.error("The Gateway was interrupted. This should not occur");
-        }
-
-        gatewayProcessStarted = false;
     }
 
     private void setupClients() {
@@ -2458,7 +2266,7 @@ public class PanelHandler extends BaseBridgeHandler {
 
     /**
      * All gateway SSE {@code panelevent} payloads land here (panel pushes + gateway logMessage).
-     * Always log, then dispatch — same idea as Mono {@code Received} + Java handlers.
+     * Always log, then dispatch — dispatch panel push events to status listeners.
      */
     public void handleMessageResponse(MessageResponse message) {
         if (message == null || message.getName() == null) {
@@ -2469,7 +2277,6 @@ public class PanelHandler extends BaseBridgeHandler {
         logPanelEvent(message.getName(), properties);
 
         switch (message.getName()) {
-            // Mono PanelService.logMessage → panelevent
             case "msg.info": {
                 String text = gatewayLogText(properties);
                 logger.debug("Gateway [DEBUG]: '{}'", text);
@@ -2610,7 +2417,7 @@ public class PanelHandler extends BaseBridgeHandler {
     }
 
     /**
-     * Net8 emits XML/ISO via XmlConvert (e.g. {@code 2026-10-30T09:28:05+01:00}).
+     * Gateway emits XML/ISO via XmlConvert (e.g. {@code 2026-10-30T09:28:05+01:00}).
      * Also accepts older locale/InvariantCulture strings from unpatched gateways.
      */
     private static @Nullable Date parseMonitorTimeStamp(String ts) {
@@ -2677,66 +2484,4 @@ public class PanelHandler extends BaseBridgeHandler {
         return value != null ? String.valueOf(value) : "";
     }
 
-    /**
-     * Captures stdout/stderr of a Mono-spawned gateway process (legacy path).
-     * External Net8 gateway uses the same log lines via SSE {@code msg.info/warn/error}.
-     */
-    class GatewayLogHandler extends LogOutputStream {
-
-        Logger log;
-        int level;
-
-        public GatewayLogHandler(Logger log, int level) {
-            super(level);
-            this.log = log;
-        }
-
-        @Override
-        protected void processLine(String line, int level) {
-            switch (level) {
-                case 0: {
-                    logger.debug("Gateway [DEBUG]: '{}'", line);
-                    if (line.contains("AppHost Created") || line.contains("listening; health at /health")) {
-                        gatewayProcessStarted = true;
-                    }
-                    break;
-                }
-                case 1: {
-                    logger.error("Gateway [ERROR]: '{}'", line);
-                    break;
-                }
-            }
-        }
-    }
-
-    public class LoggingShutdownHookProcessDestroyer extends ShutdownHookProcessDestroyer {
-
-        @Override
-        public void run() {
-            logger.info("Shutdown Hook: JVM is about to exit! Going to kill ATS gateway processes...");
-            super.run();
-        }
-    }
-
-    public class GatewayExecuteResultHandler extends DefaultExecuteResultHandler {
-
-        @Override
-        public void onProcessComplete(int exitValue) {
-            super.onProcessComplete(exitValue);
-            logger.info("Gateway exited with value '{}'", exitValue);
-            gatewayProcessStarted = false;
-            onConnectionLost();
-        }
-
-        @Override
-        public void onProcessFailed(ExecuteException e) {
-            super.onProcessFailed(e);
-            if (!watchDog.killedProcess()) {
-                logger.error("Gateway failed unexpectedly with value '{}'", e.getExitValue());
-                logger.error("Gateway failed unexpectedly with message '{}'", e.getMessage());
-            }
-            gatewayProcessStarted = false;
-            onConnectionLost();
-        }
-    }
 }

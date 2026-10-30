@@ -35,20 +35,9 @@
 				<label>PIN</label>
 				<description>User PIN for the panel (one active session per PIN)</description>
 			</parameter>
-			<parameter name="gatewayUrl" type="text" required="false">
+			<parameter name="gatewayUrl" type="text" required="true">
 				<label>Gateway URL</label>
-				<description>Base URL of an already-running dumb gateway (recommended), e.g. http://127.0.0.1:18137. When set,
-					openHAB does not spawn Mono.</description>
-			</parameter>
-			<parameter name="openhab" type="text" required="false">
-				<label>openHAB Host (legacy)</label>
-				<description>Host used to build the legacy Mono gateway URL when gatewayUrl is empty</description>
-				<advanced>true</advanced>
-			</parameter>
-			<parameter name="gatewayPortNumber" type="integer" required="false">
-				<label>Gateway Port (legacy)</label>
-				<description>TCP port of a Mono-spawned gateway when gatewayUrl is empty</description>
-				<advanced>true</advanced>
+				<description>Base URL of the AtsAdvancedGateway HTTP service, e.g. http://127.0.0.1:18137</description>
 			</parameter>
 		</config-description>
 	</bridge-type>

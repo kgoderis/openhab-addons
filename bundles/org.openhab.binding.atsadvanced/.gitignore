@@ -1,13 +1,11 @@
-# .NET build output (Mono + Net8 gateways)
+# Intermediate .NET build output (committed runtime build lives in AtsAdvancedGateway/publish/)
 AtsAdvancedGateway/obj/
 AtsAdvancedGateway/bin/
-AtsAdvancedGatewayNet8/obj/
-AtsAdvancedGatewayNet8/bin/
-AtsAdvancedGatewayNet8/tools/**/obj/
-AtsAdvancedGatewayNet8/tools/**/bin/
+AtsAdvancedGateway/tools/**/obj/
+AtsAdvancedGateway/tools/**/bin/
 
 # Local / backup noise
 *.userprefs
-*.orig
 *.cache
 *.CopyComplete
+.DS_Store
