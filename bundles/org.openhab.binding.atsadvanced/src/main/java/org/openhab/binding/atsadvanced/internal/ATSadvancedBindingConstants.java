@@ -31,18 +31,60 @@ public class ATSadvancedBindingConstants {
     // List of constants used throughout the bindig
     public static int MAX_NUMBER_ZONES = 368;
     public static int MAX_NUMBER_AREAS = 8;
+    public static int MAX_NUMBER_OUTPUTS = 256;
+    public static int MAX_NUMBER_RAS = 32;
+    public static int MAX_NUMBER_DGP = 32;
+    public static int MAX_NUMBER_USERS = 50;
+    public static int MAX_NUMBER_USERGROUPS = 16;
+    public static int MAX_NUMBER_CS = 16;
+    public static int MAX_NUMBER_PCC = 16;
+    public static int MAX_NUMBER_TRIGGERS = 255;
+    public static int MAX_NUMBER_FILTERS = 64;
+    public static int MAX_NUMBER_DIALLERS = 7;
 
     // List of all Thing Type UIDs
     public final static @NonNull ThingTypeUID THING_TYPE_PANEL = new ThingTypeUID(BINDING_ID, "panel");
     public final static @NonNull ThingTypeUID THING_TYPE_AREA = new ThingTypeUID(BINDING_ID, "area");
     public final static @NonNull ThingTypeUID THING_TYPE_ZONE = new ThingTypeUID(BINDING_ID, "zone");
+    public final static @NonNull ThingTypeUID THING_TYPE_OUTPUT = new ThingTypeUID(BINDING_ID, "output");
+    public final static @NonNull ThingTypeUID THING_TYPE_RAS = new ThingTypeUID(BINDING_ID, "ras");
+    public final static @NonNull ThingTypeUID THING_TYPE_DGP = new ThingTypeUID(BINDING_ID, "dgp");
+    public final static @NonNull ThingTypeUID THING_TYPE_SYS = new ThingTypeUID(BINDING_ID, "sys");
+    public final static @NonNull ThingTypeUID THING_TYPE_PCC = new ThingTypeUID(BINDING_ID, "pcc");
+    public final static @NonNull ThingTypeUID THING_TYPE_CS = new ThingTypeUID(BINDING_ID, "cs");
+    public final static @NonNull ThingTypeUID THING_TYPE_TRIGGER = new ThingTypeUID(BINDING_ID, "trigger");
+    public final static @NonNull ThingTypeUID THING_TYPE_USER = new ThingTypeUID(BINDING_ID, "user");
+    public final static @NonNull ThingTypeUID THING_TYPE_USERGROUP = new ThingTypeUID(BINDING_ID, "usergroup");
+    public final static @NonNull ThingTypeUID THING_TYPE_FILTER = new ThingTypeUID(BINDING_ID, "filter");
+    public final static @NonNull ThingTypeUID THING_TYPE_DIALLER = new ThingTypeUID(BINDING_ID, "dialler");
 
     // List of all Channel ids
     public final static String MONITOR = "monitor";
     public final static String ACTIVE = "active";
     public final static String ALARM = "alarm";
     public final static String SET = "set";
+    public final static String FORCE_SET = "forceset";
+    public final static String PART_SET = "partset";
     public final static String EXIT = "exit";
+    public final static String STATUS = "status";
+    public final static String INHIBIT = "inhibit";
+    public final static String ISOLATE = "isolate";
+    public final static String TAMPER = "tamper";
+    public final static String FAULT = "fault";
+    public final static String SWITCH = "switch";
+    public final static String ONLINE = "online";
+    public final static String RESET = "reset";
+    public final static String CONFIRM_ALARM = "confirmAlarm";
+    public final static String BATTERY_TEST = "batteryTest";
+    public final static String WALK_TEST = "walkTest";
+    public final static String ARM_PREVIEW = "armPreview";
+    public final static String LOG_ENTRY = "logEntry";
+    public final static String FETCH_LOG = "fetchLog";
+    public final static String LOG_HISTORY = "logHistory";
+    public final static String FETCH_LOG_HISTORY = "fetchLogHistory";
+    public final static String SCHED_TRIG = "schedTrig";
+    /** Max entries kept in {@link #LOG_HISTORY}. */
+    public static final int LOG_HISTORY_SIZE = 50;
 
     // Status flags used by the ATS Advanced Panel
     public enum ZoneStatusFlags {
@@ -63,6 +105,76 @@ public class ATSadvancedBindingConstants {
         ZNEV_PRELEARNED,
         ZNEV_HELDOPEN,
         ZNEV_INVWT
+    }
+
+    public enum OutputStatusFlags {
+        OUTEV_ACTIVE,
+        OUTEV_ON
+    }
+
+    public enum RasStatusFlags {
+        RASEV_OFFLINE,
+        RASEV_RTE,
+        RASEV_CODETAMPER,
+        RASEV_TAMPER
+    }
+
+    public enum DgpStatusFlags {
+        DGPEV_OFFLINE,
+        DGPEV_MAINSFAIL,
+        DGPEV_BATTFAIL,
+        DGPEV_TAMPER,
+        DGPEV_PU_FAIL
+    }
+
+    public enum SysStatusFlags {
+        SYSEV_ALLSET,
+        SYSEV_AUTOANS,
+        SYSEV_RCONNACTV,
+        SYSEV_RCONNFAIL,
+        SYSEV_LPRGACTV,
+        SYSEV_RPRGACTV,
+        SYSEV_TIMECHG,
+        SYSEV_SSAVER,
+        SYSEV_ISIREN,
+        SYSEV_ESIREN,
+        SYSEV_STROBE,
+        SYSEV_FAULT,
+        SYSEV_TAMPER,
+        SYSEV_SERVICEIN,
+        SYSEV_WALKTST_MODE
+    }
+
+    public enum PccStatusFlags {
+        PCCEV_RUNNING
+    }
+
+    public enum CsStatusFlags {
+        CSEV_FTC,
+        CSEV_HBF,
+        CSEV_BUSY
+    }
+
+    public enum TriggStatusFlags {
+        TRGEV_KEYFOBSW1,
+        TRGEV_KEYFOBSW2,
+        TRGEV_KEYFOBSW12,
+        TRGEV_REMOTEOUT
+    }
+
+    public enum UserStatusFlags {
+        USEREV_CARDPIN,
+        USEREV_SMSCTRLACTIVE,
+        USEREV_SMSCTRLLOCK,
+        USEREV_SMSREPACTIVE
+    }
+
+    public enum UgStatusFlags {
+        UGEV_CARDPIN
+    }
+
+    public enum FilterStatusFlags {
+        CFLEV_ACTIVE
     }
 
     public enum AreaStatusFlags {

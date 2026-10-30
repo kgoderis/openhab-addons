@@ -24,7 +24,12 @@ import org.openhab.binding.atsadvanced.internal.ATSadvancedBindingConstants;
 import org.openhab.binding.atsadvanced.internal.PanelClient.MessageResponse;
 import org.openhab.binding.atsadvanced.internal.PanelClient.Property;
 import org.openhab.binding.atsadvanced.internal.handler.AreaHandler;
+import org.openhab.binding.atsadvanced.internal.handler.DgpHandler;
+import org.openhab.binding.atsadvanced.internal.handler.NamedReadOnlyHandler;
+import org.openhab.binding.atsadvanced.internal.handler.OutputHandler;
 import org.openhab.binding.atsadvanced.internal.handler.PanelHandler;
+import org.openhab.binding.atsadvanced.internal.handler.RasHandler;
+import org.openhab.binding.atsadvanced.internal.handler.StatObjectHandler;
 import org.openhab.binding.atsadvanced.internal.handler.ZoneHandler;
 import org.openhab.core.config.discovery.AbstractDiscoveryService;
 import org.openhab.core.config.discovery.DiscoveryResult;
@@ -49,6 +54,17 @@ public class ATSadvancedDiscoveryService extends AbstractDiscoveryService {
     static {
         SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_AREA);
         SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_ZONE);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_OUTPUT);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_RAS);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_DGP);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_SYS);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_PCC);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_CS);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_TRIGGER);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_USER);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_USERGROUP);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_FILTER);
+        SUPPORTED_THING_TYPES_UIDS.add(ATSadvancedBindingConstants.THING_TYPE_DIALLER);
     }
 
     private static int DISCOVERY_THREAD_INTERVAL = 60;
@@ -151,9 +167,84 @@ public class ATSadvancedDiscoveryService extends AbstractDiscoveryService {
                         }
                     }
                 }
+
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_OUTPUT, "Output", OutputHandler.NUMBER,
+                        OutputHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_OUTPUTS, panel::getOutputNamesChunk);
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_RAS, "RAS", RasHandler.NUMBER,
+                        RasHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_RAS, panel::getRasNamesChunk);
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_DGP, "DGP", DgpHandler.NUMBER,
+                        DgpHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_DGP, panel::getDgpNamesChunk);
+
+                // A / E / G / D listing
+                discoverSys();
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_PCC, "PCC", StatObjectHandler.NUMBER,
+                        StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_PCC, panel::getPccNamesChunk);
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_CS, "CS", StatObjectHandler.NUMBER,
+                        StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_CS, panel::getCsNamesChunk);
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_TRIGGER, "Trigger",
+                        StatObjectHandler.NUMBER, StatObjectHandler.NAME,
+                        ATSadvancedBindingConstants.MAX_NUMBER_TRIGGERS, panel::getTriggerNamesChunk);
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_USER, "User", StatObjectHandler.NUMBER,
+                        StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_USERS, panel::getUserNamesChunk);
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_USERGROUP, "UserGroup",
+                        StatObjectHandler.NUMBER, StatObjectHandler.NAME,
+                        ATSadvancedBindingConstants.MAX_NUMBER_USERGROUPS, panel::getUserGroupNamesChunk);
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_FILTER, "Filter", StatObjectHandler.NUMBER,
+                        StatObjectHandler.NAME, ATSadvancedBindingConstants.MAX_NUMBER_FILTERS,
+                        panel::getFilterNamesChunk);
+                discoverNamedObjects(ATSadvancedBindingConstants.THING_TYPE_DIALLER, "Dialler",
+                        NamedReadOnlyHandler.NUMBER, NamedReadOnlyHandler.NAME,
+                        ATSadvancedBindingConstants.MAX_NUMBER_DIALLERS, panel::getDiallerNamesChunk);
             }
         } catch (Exception e) {
             logger.error("An exception occurred while discovering an ATS Advanced Panel: '{}'", e.getMessage());
+        }
+    }
+
+    private void discoverSys() {
+        ThingUID uid = new ThingUID(ATSadvancedBindingConstants.THING_TYPE_SYS, "Sys1");
+        Map<String, Object> properties = new HashMap<>(2);
+        properties.put(StatObjectHandler.NUMBER, "1");
+        properties.put(StatObjectHandler.NAME, "System");
+        thingDiscovered(DiscoveryResultBuilder.create(uid).withProperties(properties)
+                .withBridge(panel.getThing().getUID()).withLabel("ATS Advanced System").build());
+    }
+
+    @FunctionalInterface
+    private interface NameChunkFetcher {
+        MessageResponse fetch(int index);
+    }
+
+    private void discoverNamedObjects(ThingTypeUID type, String prefix, String numberKey, String nameKey, int max,
+            NameChunkFetcher fetcher) {
+        int current = 1;
+        while (current <= max) {
+            MessageResponse result = fetcher.fetch(current);
+            if (result == null) {
+                break;
+            }
+            current = current + result.getProperties().size() - 1;
+            int resultIndex = 0;
+            for (Property property : result.getProperties()) {
+                if ("index".equals(property.getId()) && property.getValue() != null) {
+                    resultIndex = Integer.parseInt(Long.toString(((Number) property.getValue()).longValue()));
+                }
+            }
+            for (Property property : result.getProperties()) {
+                if (!"name".equals(property.getId())) {
+                    continue;
+                }
+                if (property.getValue() instanceof String name && !name.isEmpty()) {
+                    ThingUID uid = new ThingUID(type, prefix + resultIndex);
+                    Map<String, Object> properties = new HashMap<>(2);
+                    properties.put(numberKey, String.valueOf(resultIndex));
+                    properties.put(nameKey, name);
+                    thingDiscovered(DiscoveryResultBuilder.create(uid).withProperties(properties)
+                            .withBridge(panel.getThing().getUID())
+                            .withLabel("ATS Advanced " + prefix + " " + resultIndex).build());
+                }
+                resultIndex++;
+            }
         }
     }
 

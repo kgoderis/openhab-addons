@@ -18,7 +18,7 @@ package org.openhab.binding.atsadvanced.internal;
  * @author Karel Goderis
  * @since 1.1.0
  */
-public class ATSAdvancedException extends Exception {
+public class ATSAdvancedException extends RuntimeException {
 
     private static final long serialVersionUID = 2095258016390913221L;
 

@@ -5,19 +5,20 @@
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
 	<thing-type id="zone">
-
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="panel"/>
 		</supported-bridge-type-refs>
-
 		<label>Zone Thing</label>
-		<description>Zone</description>
-
+		<description>Zone (sensor/door). Inhibit/isolate use a createCC.ZONE control session, not panel programming.</description>
 		<channels>
 			<channel id="active" typeId="active-channel"/>
 			<channel id="alarm" typeId="alarm-channel"/>
+			<channel id="inhibit" typeId="inhibit-channel"/>
+			<channel id="isolate" typeId="isolate-channel"/>
+			<channel id="tamper" typeId="tamper-channel"/>
+			<channel id="fault" typeId="fault-channel"/>
+			<channel id="status" typeId="status-channel"/>
 		</channels>
-
 		<config-description>
 			<parameter name="number" type="integer">
 				<label>Zone Number</label>
@@ -25,17 +26,46 @@
 				<required>true</required>
 			</parameter>
 		</config-description>
-
 	</thing-type>
 
 	<channel-type id="active-channel">
 		<item-type>Switch</item-type>
 		<label>Active</label>
-		<description>Flag to indicate if the Zone is in active state, or not</description>
+		<description>Zone is in active state</description>
+		<state readOnly="true"/>
 	</channel-type>
 	<channel-type id="alarm-channel">
 		<item-type>Switch</item-type>
 		<label>Alarm</label>
-		<description>Flag to indicate if the Zone is in alarm state</description>
+		<description>Zone is in alarm state</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="inhibit-channel">
+		<item-type>Switch</item-type>
+		<label>Inhibit</label>
+		<description>Inhibit / uninhibit this zone (createCC.ZONE → fnCC.ZONE_INHIBIT / UNINHIBIT)</description>
+	</channel-type>
+	<channel-type id="isolate-channel">
+		<item-type>Switch</item-type>
+		<label>Isolate</label>
+		<description>Isolate / unisolate this zone (createCC.ZONE → fnCC.ZONE_ISOLATE / UNISOLATE)</description>
+	</channel-type>
+	<channel-type id="tamper-channel">
+		<item-type>Switch</item-type>
+		<label>Tamper</label>
+		<description>Zone tamper</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="fault-channel">
+		<item-type>Switch</item-type>
+		<label>Fault</label>
+		<description>Zone fault</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="status-channel">
+		<item-type>String</item-type>
+		<label>Status</label>
+		<description>Readable summary of active zone flags</description>
+		<state readOnly="true"/>
 	</channel-type>
 </thing:thing-descriptions>

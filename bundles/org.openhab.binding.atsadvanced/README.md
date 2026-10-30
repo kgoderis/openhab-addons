@@ -1,94 +1,73 @@
 # atsadvanced Binding
 
-_Give some details about what this binding is meant for - a protocol, system, specific device._
+Control and monitor UTC/FireClass **ATS Advanced** panels from openHAB via an external **dumb gateway** (NAce + `ats.advanced.drv`). Domain logic stays in the Java binding.
 
-_If possible, provide some resources like pictures (only PNG is supported currently), a video, etc. to give an impression of what can be done with this binding._
-_You can place such resources into a `doc` folder next to this README.md._
+## Architecture
 
-_Put each sentence in a separate line to improve readability of diffs._
+- **Gateway** (recommended): .NET 8 process `AtsAdvancedGatewayNet8` — HTTP `/configurepanel`, `/message`, SSE `/events`
+- **Binding**: `AtsGatewayClient` (HttpClient + Jackson), no ServiceStack
+- **Legacy**: optional Mono spawn of `ATSAdvancedGateway.exe` when `gatewayUrl` is unset
 
-## Supported Things
+## Thing: `atsadvanced:panel`
 
-_Please describe the different supported things / devices including their ThingTypeUID within this section._
-_Which different types are supported, which models were tested etc.?_
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
+| Parameter | Required | Description |
+|-----------|----------|-------------|
+| `ipAddress` | yes | Panel IP |
+| `portNumber` | yes | Panel TCP port (default 32000) |
+| `pin` | yes | User PIN (one active session per PIN) |
+| `gatewayUrl` | no | e.g. `http://127.0.0.1:18137` — preferred |
+| `openhab` / `gatewayPortNumber` | no | Legacy Mono gateway addressing |
 
-- `bridge`: Short description of the Bridge, if any
-- `sample`: Short description of the Thing with the ThingTypeUID `sample`
-
-## Discovery
-
-_Describe the available auto-discovery features here._
-_Mention for what it works and what needs to be kept in mind when using it._
-
-## Binding Configuration
-
-_If your binding requires or supports general configuration settings, please create a folder ```cfg``` and place the configuration file ```<bindingId>.cfg``` inside it._
-_In this section, you should link to this file and provide some information about the options._
-_The file could e.g. look like:_
-
-```
-# Configuration for the atsadvanced Binding
-#
-# Default secret key for the pairing of the atsadvanced Thing.
-# It has to be between 10-40 (alphanumeric) characters.
-# This may be changed by the user for security reasons.
-secret=openHABSecret
-```
-
-_Note that it is planned to generate some part of this based on the information that is available within ```src/main/resources/OH-INF/binding``` of your binding._
-
-_If your binding does not offer any generic configurations, you can remove this section completely._
-
-## Thing Configuration
-
-_Describe what is needed to manually configure a thing, either through the UI or via a thing-file._
-_This should be mainly about its mandatory and optional configuration parameters._
-
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
-
-### `sample` Thing Configuration
-
-| Name            | Type    | Description                           | Default | Required | Advanced |
-|-----------------|---------|---------------------------------------|---------|----------|----------|
-| hostname        | text    | Hostname or IP address of the device  | N/A     | yes      | no       |
-| password        | text    | Password to access the device         | N/A     | yes      | no       |
-| refreshInterval | integer | Interval the device is polled in sec. | 600     | no       | yes      |
-
-## Channels
-
-_Here you should provide information about available channel types, what their meaning is and how they can be used._
-
-_Note that it is planned to generate some part of this based on the XML files within ```src/main/resources/OH-INF/thing``` of your binding._
-
-| Channel | Type   | Read/Write | Description                 |
-|---------|--------|------------|-----------------------------|
-| control | Switch | RW         | This is the control channel |
-
-## Full Example
-
-_Provide a full usage example based on textual configuration files._
-_*.things, *.items examples are mandatory as textual configuration is well used by many users._
-_*.sitemap examples are optional._
-
-### Thing Configuration
+### Example
 
 ```java
-Example thing configuration goes here.
-```
-### Item Configuration
-
-```java
-Example item configuration goes here.
-```
-
-### Sitemap Configuration
-
-```perl
-Optional Sitemap configuration goes here.
-Remove this section, if not needed.
+Bridge atsadvanced:panel:p1 [
+  ipAddress="192.168.0.11",
+  portNumber=32000,
+  pin=XXXXXX,
+  gatewayUrl="http://127.0.0.1:18137"
+]
 ```
 
-## Any custom content here!
+## Run the .NET 8 gateway
 
-_Feel free to add additional sections for whatever you think should also be mentioned about your binding!_
+**Service install** (LaunchAgent / LaunchDaemon / systemd): see [`AtsAdvancedGatewayNet8/deploy/README.md`](AtsAdvancedGatewayNet8/deploy/README.md).
+
+```bash
+cd AtsAdvancedGatewayNet8/deploy
+./install.sh --agent    # macOS per-user, listens on http://127.0.0.1:18137
+```
+
+Manual / POC: `poc/README.md`. On macOS the gateway uses a `kernel32` shim. Build patches NAce `AsyncFireEvent` (`BeginInvoke` → `NetCoreAsyncFireLib`) so panel push events (`msg.MONITOR`, `msgCOS.*`) work on .NET 8.
+
+## Child things
+
+- `atsadvanced:area` — set / force-set / part-set / alarm / exit / status  
+- `atsadvanced:zone` — active / alarm / inhibit / isolate / tamper / fault / status  
+- `atsadvanced:output` — switch + status (`createCC.OUTPUT`, installer rights typical)  
+- `atsadvanced:ras` / `atsadvanced:dgp` — keypad / expander status  
+
+Panel bridge also exposes engineer **reset**, **confirmAlarm**, and **batteryTest**.
+
+### Control sessions (important)
+
+`createCC.ZONE` / `createCC.A_SET` / `createCC.OUTPUT` / … do **not** program the panel. They open a short-lived **command-and-control session**:
+
+1. `createCC.*` → `return.short` session id  
+2. one or more `fnCC.*` using that `sessionID` (+ `objectID` for zone/output)  
+3. `destroyCC.SESSION`  
+
+Zone inhibit/isolate use a single-state `ZIC_Active` session. Area arm/disarm use the multi-state machines documented in `ats.advanced.pdf`.
+
+Protocol fault/flag prose: `fault-messages.properties` + `ats-prose.properties`. Thing/channel labels use OH-INF i18n.
+
+## Gateway logs in openHAB
+
+Same pattern as the Mono gateway:
+
+1. Gateway emits `INFO:` / `WARNING:` / `ERROR:` on the console and pushes `msg.info` / `msg.warn` / `msg.error` panelevents (property `result`), like `PanelService.logMessage`.
+2. Binding logs them as `Gateway [DEBUG]: '…'` / `Gateway [WARNING]: '…'` / `Gateway [ERROR]: '…'` on `PanelHandler`’s logger (legacy Mono process stdout/stderr uses the same prefixes via `GatewayLogHandler`).
+
+```
+<Logger name="org.openhab.binding.atsadvanced.internal.handler.PanelHandler" level="DEBUG"/>
+```

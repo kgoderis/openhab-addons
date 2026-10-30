@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -14,22 +14,33 @@ package org.openhab.binding.atsadvanced.internal;
 
 import java.util.ArrayList;
 
-import net.servicestack.client.IReturn;
-import net.servicestack.client.Route;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
+ * JSON DTOs for the ATS Advanced dumb gateway (no ServiceStack).
+ *
  * @author Karel Goderis - Initial contribution
  */
-public class PanelClient {
+public final class PanelClient {
 
-    @Route("/configurepanel")
-    public static class ConfigurePanel implements IReturn<ConfigurePanelResponse> {
-        public String Hostaddress = null;
-        public Integer Port = null;
-        public String Password = null;
-        public Integer Hearbeat = null;
-        public Integer Timeout = null;
-        public Integer Retries = null;
+    private PanelClient() {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class ConfigurePanel {
+        @JsonProperty("hostaddress")
+        public String Hostaddress;
+        @JsonProperty("port")
+        public Integer Port;
+        @JsonProperty("password")
+        public String Password;
+        @JsonProperty("hearbeat")
+        public Integer Hearbeat;
+        @JsonProperty("timeout")
+        public Integer Timeout;
+        @JsonProperty("retries")
+        public Integer Retries;
 
         public String getHostaddress() {
             return Hostaddress;
@@ -84,48 +95,12 @@ public class PanelClient {
             this.Retries = value;
             return this;
         }
-
-        private static Object responseType = ConfigurePanelResponse.class;
-
-        @Override
-        public Object getResponseType() {
-            return responseType;
-        }
     }
 
-    @Route("/message")
-    public static class Message implements IReturn<MessageResponse> {
-        public String name = null;
-        public ArrayList<Property> Properties = null;
-
-        public String getName() {
-            return name;
-        }
-
-        public Message setName(String value) {
-            this.name = value;
-            return this;
-        }
-
-        public ArrayList<Property> getProperties() {
-            return Properties;
-        }
-
-        public Message setProperties(ArrayList<Property> value) {
-            this.Properties = value;
-            return this;
-        }
-
-        private static Object responseType = MessageResponse.class;
-
-        @Override
-        public Object getResponseType() {
-            return responseType;
-        }
-    }
-
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class ConfigurePanelResponse {
-        public String Result = null;
+        @JsonProperty("result")
+        public String Result;
 
         public String getResult() {
             return Result;
@@ -137,9 +112,34 @@ public class PanelClient {
         }
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class Message {
+        public String name;
+        public ArrayList<Property> properties = new ArrayList<>();
+
+        public String getName() {
+            return name;
+        }
+
+        public Message setName(String value) {
+            this.name = value;
+            return this;
+        }
+
+        public ArrayList<Property> getProperties() {
+            return properties != null ? properties : new ArrayList<>();
+        }
+
+        public Message setProperties(ArrayList<Property> value) {
+            this.properties = value;
+            return this;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class MessageResponse {
-        public String name = null;
-        public ArrayList<Property> Properties = null;
+        public String name;
+        public ArrayList<Property> properties = new ArrayList<>();
 
         public String getName() {
             return name;
@@ -151,23 +151,20 @@ public class PanelClient {
         }
 
         public ArrayList<Property> getProperties() {
-            return Properties;
+            return properties != null ? properties : new ArrayList<>();
         }
 
         public MessageResponse setProperties(ArrayList<Property> value) {
-            this.Properties = value;
+            this.properties = value;
             return this;
         }
     }
 
-    public static class Program {
-
-    }
-
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Property {
-        public String id = null;
-        public Integer index = null;
-        public Object value = null;
+        public String id;
+        public Integer index;
+        public Object value;
 
         public String getId() {
             return id;

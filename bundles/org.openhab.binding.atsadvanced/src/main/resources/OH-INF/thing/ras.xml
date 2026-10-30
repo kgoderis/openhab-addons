@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="atsadvanced"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="ras">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>RAS (Keypad) Thing</label>
+		<description>Remote arming station / keypad status</description>
+		<channels>
+			<channel id="online" typeId="online-channel"/>
+			<channel id="tamper" typeId="ras-tamper-channel"/>
+			<channel id="status" typeId="ras-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>RAS Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-type id="online-channel">
+		<item-type>Switch</item-type>
+		<label>Online</label>
+		<description>RAS is online (inverse of RASEV_OFFLINE)</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="ras-tamper-channel">
+		<item-type>Switch</item-type>
+		<label>Tamper</label>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="ras-status-channel">
+		<item-type>String</item-type>
+		<label>Status</label>
+		<state readOnly="true"/>
+	</channel-type>
+</thing:thing-descriptions>

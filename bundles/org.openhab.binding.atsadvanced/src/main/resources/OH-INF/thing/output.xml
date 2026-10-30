@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="atsadvanced"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="output">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>Output Thing</label>
+		<description>Panel output. Control uses createCC.OUTPUT (all areas) → ACTIVATE/DEACTIVATE. Installer rights typically
+			required.</description>
+		<channels>
+			<channel id="switch" typeId="output-switch-channel"/>
+			<channel id="status" typeId="output-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>Output Number</label>
+				<description>Output object index on the ATS Advanced Panel</description>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-type id="output-switch-channel">
+		<item-type>Switch</item-type>
+		<label>Output</label>
+		<description>Activate / deactivate output</description>
+	</channel-type>
+	<channel-type id="output-status-channel">
+		<item-type>String</item-type>
+		<label>Status</label>
+		<description>Readable output status flags</description>
+		<state readOnly="true"/>
+	</channel-type>
+</thing:thing-descriptions>

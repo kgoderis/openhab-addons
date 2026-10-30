@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2010-2020 Contributors to the openHAB project
+ * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
  * information.
@@ -14,14 +14,17 @@ package org.openhab.binding.atsadvanced.internal.handler;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.openhab.binding.atsadvanced.internal.ATSAdvancedException;
 import org.openhab.binding.atsadvanced.internal.ATSadvancedBindingConstants;
 import org.openhab.binding.atsadvanced.internal.ATSadvancedBindingConstants.ZoneStatusFlags;
+import org.openhab.binding.atsadvanced.internal.AtsProse;
 import org.openhab.binding.atsadvanced.internal.PanelClient.MessageResponse;
 import org.openhab.binding.atsadvanced.internal.PanelClient.Property;
 import org.openhab.core.library.types.OnOffType;
+import org.openhab.core.library.types.StringType;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -34,19 +37,19 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * @author Karel Goderis - Initial contribution
+ * Zone thing. Inhibit/isolate commands open a {@code createCC.ZONE} control session
+ * (not panel programming).
  */
 public class ZoneHandler extends BaseThingHandler implements PanelStatusListener, ZoneStatusListener {
 
-    // List of Configuration constants
     public static final String NUMBER = "number";
     public static final String NAME = "name";
 
-    private Logger logger = LoggerFactory.getLogger(ZoneHandler.class);
+    private final Logger logger = LoggerFactory.getLogger(ZoneHandler.class);
 
     private PanelHandler bridgeHandler;
-    private ArrayList<ZoneStatusFlags> previousStatus = new ArrayList<ZoneStatusFlags>();
-    private ArrayList<ZoneStatusFlags> lastStatus = new ArrayList<ZoneStatusFlags>();
+    private ArrayList<ZoneStatusFlags> previousStatus = new ArrayList<>();
+    private ArrayList<ZoneStatusFlags> lastStatus = new ArrayList<>();
     private boolean inErrorState = false;
 
     public ZoneHandler(Thing thing) {
@@ -55,11 +58,9 @@ public class ZoneHandler extends BaseThingHandler implements PanelStatusListener
 
     @Override
     public void initialize() {
-        previousStatus = new ArrayList<ZoneStatusFlags>();
-        lastStatus = new ArrayList<ZoneStatusFlags>();
-
+        previousStatus = new ArrayList<>();
+        lastStatus = new ArrayList<>();
         updateStatus(ThingStatus.OFFLINE);
-
         try {
             getBridgeHandler().registerPanelStatusListener(this);
             getBridgeHandler().registerZoneStatusListener(this);
@@ -96,18 +97,31 @@ public class ZoneHandler extends BaseThingHandler implements PanelStatusListener
         return this.bridgeHandler;
     }
 
+    private int zoneNumber() {
+        return ((BigDecimal) getConfig().get(NUMBER)).intValue();
+    }
+
     @Override
     public void handleCommand(@NonNull ChannelUID channelUID, @NonNull Command command) {
-
         PanelHandler panel = getBridgeHandler();
-
         if (panel == null) {
             logger.warn("ATS Advanced Panel handler not found. Cannot handle command without bridge.");
             return;
         }
-
         if (command instanceof RefreshType) {
-            onZoneStateChanged(((BigDecimal) this.getThing().getConfiguration().get(ZoneHandler.NUMBER)).intValue());
+            onZoneStateChanged(zoneNumber());
+            return;
+        }
+        if (!(command instanceof OnOffType onOff)) {
+            return;
+        }
+        String id = channelUID.getId();
+        if (ATSadvancedBindingConstants.INHIBIT.equals(id)) {
+            panel.inhibitZone(zoneNumber(), onOff == OnOffType.ON);
+            onZoneStateChanged(zoneNumber());
+        } else if (ATSadvancedBindingConstants.ISOLATE.equals(id)) {
+            panel.isolateZone(zoneNumber(), onOff == OnOffType.ON);
+            onZoneStateChanged(zoneNumber());
         }
     }
 
@@ -120,22 +134,16 @@ public class ZoneHandler extends BaseThingHandler implements PanelStatusListener
     public void onBridgeConnected(@NonNull PanelHandler bridge) {
         updateStatus(ThingStatus.ONLINE);
         updateName();
-        onZoneStateChanged(((BigDecimal) this.getThing().getConfiguration().get(ZoneHandler.NUMBER)).intValue());
+        onZoneStateChanged(zoneNumber());
     }
 
     private void updateName() {
-
-        if ((String) getConfig().get(NAME) == null && getThing().getStatus() == ThingStatus.ONLINE) {
-            PanelHandler panel = getBridgeHandler();
-
-            MessageResponse result = panel.getZoneNamesChunk(((BigDecimal) getConfig().get(NUMBER)).intValue());
-
+        if (getConfig().get(NAME) == null && getThing().getStatus() == ThingStatus.ONLINE) {
+            MessageResponse result = getBridgeHandler().getZoneNamesChunk(zoneNumber());
             if (result != null) {
                 for (Property property : result.getProperties()) {
-                    if (property.getId().equals("name")) {
-                        if (!(((String) property.getValue()).equals(""))) {
-                            getThing().getConfiguration().put(NAME, property.getValue());
-                        }
+                    if ("name".equals(property.getId()) && property.getValue() instanceof String s && !s.isEmpty()) {
+                        getThing().getConfiguration().put(NAME, s);
                         break;
                     }
                 }
@@ -143,83 +151,43 @@ public class ZoneHandler extends BaseThingHandler implements PanelStatusListener
         }
     }
 
-    public boolean isActive() {
-        return lastStatus.contains(ZoneStatusFlags.ZNEV_ACTIVE);
-    }
-
-    public boolean isAlarm() {
-        return lastStatus.contains(ZoneStatusFlags.ZNEV_ALARM);
-    }
-
-    public boolean wasActive() {
-        return previousStatus.contains(ZoneStatusFlags.ZNEV_ACTIVE);
-    }
-
-    public boolean wasAlarm() {
-        return previousStatus.contains(ZoneStatusFlags.ZNEV_ALARM);
+    private boolean has(ZoneStatusFlags flag) {
+        return lastStatus.contains(flag);
     }
 
     @Override
     public void onZoneStateChanged(int zoneNumber) {
-        if (((BigDecimal) this.getThing().getConfiguration().get(ZoneHandler.NUMBER)).intValue() == zoneNumber) {
-            if (getThing().getStatus() == ThingStatus.ONLINE) {
-                previousStatus = lastStatus;
-                ArrayList<ZoneStatusFlags> result = null;
-                if (!inErrorState) {
-                    result = getBridgeHandler().getZoneStatus(((BigDecimal) getConfig().get(NUMBER)).intValue());
-                } else {
-                    logger.warn("Zone '{}' is in an error state, do you have access?", getConfig().get(NAME));
-                }
-
-                if (result != null) {
-
-                    lastStatus = result;
-
-                    logger.debug("Zone '{}' has changed status from '{}' to '{}'",
-                            new Object[] { (String) getConfig().get(NAME), getPreviousStatus().toString(),
-                                    getLastStatus().toString() });
-
-                    if (isActive() && !wasActive()) {
-                        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ACTIVE),
-                                OnOffType.ON);
-                    }
-
-                    if (!isActive() && wasActive()) {
-                        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ACTIVE),
-                                OnOffType.OFF);
-                    }
-
-                    if (!isActive() && !wasActive()) {
-                        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ACTIVE),
-                                OnOffType.OFF);
-                    }
-
-                    if (isAlarm() && !wasAlarm()) {
-                        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ALARM),
-                                OnOffType.ON);
-                    }
-
-                    if (!isAlarm() && wasAlarm()) {
-                        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ALARM),
-                                OnOffType.OFF);
-                    }
-
-                    if (!isAlarm() && !wasAlarm()) {
-                        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ALARM),
-                                OnOffType.OFF);
-                    }
-                } else {
-                    inErrorState = true;
-                }
-            }
+        if (zoneNumber() != zoneNumber || getThing().getStatus() != ThingStatus.ONLINE) {
+            return;
         }
-    }
+        previousStatus = lastStatus;
+        ArrayList<ZoneStatusFlags> result = null;
+        if (!inErrorState) {
+            result = getBridgeHandler().getZoneStatus(zoneNumber);
+        } else {
+            logger.warn("Zone '{}' is in an error state, do you have access?", getConfig().get(NAME));
+        }
+        if (result == null) {
+            inErrorState = true;
+            return;
+        }
+        lastStatus = result;
+        logger.debug("Zone '{}' status → {}", getConfig().get(NAME), lastStatus);
 
-    public ArrayList<ZoneStatusFlags> getPreviousStatus() {
-        return previousStatus;
-    }
-
-    public ArrayList<ZoneStatusFlags> getLastStatus() {
-        return lastStatus;
+        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ACTIVE),
+                has(ZoneStatusFlags.ZNEV_ACTIVE) ? OnOffType.ON : OnOffType.OFF);
+        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ALARM),
+                has(ZoneStatusFlags.ZNEV_ALARM) ? OnOffType.ON : OnOffType.OFF);
+        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.INHIBIT),
+                has(ZoneStatusFlags.ZNEV_INHIBIT) ? OnOffType.ON : OnOffType.OFF);
+        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.ISOLATE),
+                has(ZoneStatusFlags.ZNEV_ISOLATE) ? OnOffType.ON : OnOffType.OFF);
+        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.TAMPER),
+                has(ZoneStatusFlags.ZNEV_TAMPER) ? OnOffType.ON : OnOffType.OFF);
+        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.FAULT),
+                has(ZoneStatusFlags.ZNEV_FAULT) ? OnOffType.ON : OnOffType.OFF);
+        String prose = AtsProse.getInstance()
+                .flagsSummary(lastStatus.stream().map(Enum::name).collect(Collectors.toList()));
+        updateState(new ChannelUID(getThing().getUID(), ATSadvancedBindingConstants.STATUS), new StringType(prose));
     }
 }

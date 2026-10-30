@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="atsadvanced"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="sys">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>System Status</label>
+		<description>Panel-wide SYSTEM status (getSTAT.SYS). Single object.</description>
+		<channels>
+			<channel id="status" typeId="stat-status-channel"/>
+			<channel id="fault" typeId="stat-fault-channel"/>
+			<channel id="tamper" typeId="stat-tamper-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>System Object Number</label>
+				<description>Usually 1</description>
+				<default>1</default>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="pcc">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>PC Connection</label>
+		<description>PC connection (OCC/PCC) status — read-only</description>
+		<channels>
+			<channel id="status" typeId="stat-status-channel"/>
+			<channel id="active" typeId="stat-active-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>PCC Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="cs">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>Central Station</label>
+		<description>Central station status — read-only</description>
+		<channels>
+			<channel id="status" typeId="stat-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>CS Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="trigger">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>Trigger</label>
+		<description>Trigger object. Control uses createCC.OUT_TRIG (remote / scheduled).</description>
+		<channels>
+			<channel id="switch" typeId="trigger-switch-channel"/>
+			<channel id="schedTrig" typeId="sched-trig-channel"/>
+			<channel id="status" typeId="stat-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>Trigger Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="user">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>User</label>
+		<description>User status — read-only listing / getSTAT.USER</description>
+		<channels>
+			<channel id="status" typeId="stat-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>User Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="usergroup">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>User Group</label>
+		<description>User group status — read-only</description>
+		<channels>
+			<channel id="status" typeId="stat-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>User Group Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="filter">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>Event Filter</label>
+		<description>Conditional event filter — read-only</description>
+		<channels>
+			<channel id="status" typeId="stat-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>Filter Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="dialler">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>Dialler</label>
+		<description>Dialler path — read-only name listing (no getSTAT.DL)</description>
+		<channels>
+			<channel id="status" typeId="stat-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>Dialler Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-type id="stat-status-channel">
+		<item-type>String</item-type>
+		<label>Status</label>
+		<description>Readable summary of active status flags</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="stat-fault-channel">
+		<item-type>Switch</item-type>
+		<label>Fault</label>
+		<description>Global system fault</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="stat-tamper-channel">
+		<item-type>Switch</item-type>
+		<label>Tamper</label>
+		<description>Global system tamper</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="stat-active-channel">
+		<item-type>Switch</item-type>
+		<label>Active</label>
+		<description>Object is active / running</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="trigger-switch-channel">
+		<item-type>Switch</item-type>
+		<label>Trigger</label>
+		<description>Activate / deactivate trigger (fnCC.OUT_TRIG_*)</description>
+	</channel-type>
+	<channel-type id="sched-trig-channel">
+		<item-type>Switch</item-type>
+		<label>Scheduled Trigger</label>
+		<description>Activate / deactivate scheduled trigger (fnCC.OUT_SCHED_TRIG_*)</description>
+	</channel-type>
+</thing:thing-descriptions>
