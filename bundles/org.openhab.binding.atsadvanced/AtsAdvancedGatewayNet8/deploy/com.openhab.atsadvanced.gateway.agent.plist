@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Per-user LaunchAgent (no root). Good fit when openHAB also runs as your login user.
+
+  Install via: ./install.sh --agent
+  Loads into: ~/Library/LaunchAgents/
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.openhab.atsadvanced.gateway</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>ATS_GATEWAY_HOME_PLACEHOLDER/atsadvanced-gateway.sh</string>
+	</array>
+
+	<key>WorkingDirectory</key>
+	<string>ATS_GATEWAY_HOME_PLACEHOLDER</string>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>ATS_GATEWAY_HOME</key>
+		<string>ATS_GATEWAY_HOME_PLACEHOLDER</string>
+		<key>DOTNET_ROOT</key>
+		<string>DOTNET_ROOT_PLACEHOLDER</string>
+		<key>ASPNETCORE_URLS</key>
+		<string>http://127.0.0.1:18137</string>
+		<key>DOTNET_ENVIRONMENT</key>
+		<string>Production</string>
+	</dict>
+
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+
+	<key>StandardOutPath</key>
+	<string>LOG_DIR_PLACEHOLDER/atsadvanced-gateway.log</string>
+	<key>StandardErrorPath</key>
+	<string>LOG_DIR_PLACEHOLDER/atsadvanced-gateway.err.log</string>
+
+	<key>ThrottleInterval</key>
+	<integer>5</integer>
+</dict>
+</plist>

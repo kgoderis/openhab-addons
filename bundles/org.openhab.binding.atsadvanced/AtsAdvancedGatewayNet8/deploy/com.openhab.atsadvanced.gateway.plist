@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  System LaunchDaemon (sudo). Listens on 127.0.0.1:18137 by default.
+
+  Install: sudo ./install.sh --daemon [--user youruser]
+  Label:   com.openhab.atsadvanced.gateway
+
+  Placeholders ATS_GATEWAY_HOME / DOTNET_ROOT / USER_NAME are filled by install.sh.
+-->
+<plist version="1.0">
+<dict>
+	<key>Label</key>
+	<string>com.openhab.atsadvanced.gateway</string>
+
+	<key>ProgramArguments</key>
+	<array>
+		<string>ATS_GATEWAY_HOME_PLACEHOLDER/atsadvanced-gateway.sh</string>
+	</array>
+
+	<key>WorkingDirectory</key>
+	<string>ATS_GATEWAY_HOME_PLACEHOLDER</string>
+
+	<key>EnvironmentVariables</key>
+	<dict>
+		<key>ATS_GATEWAY_HOME</key>
+		<string>ATS_GATEWAY_HOME_PLACEHOLDER</string>
+		<key>DOTNET_ROOT</key>
+		<string>DOTNET_ROOT_PLACEHOLDER</string>
+		<key>ASPNETCORE_URLS</key>
+		<string>http://127.0.0.1:18137</string>
+		<key>DOTNET_ENVIRONMENT</key>
+		<string>Production</string>
+	</dict>
+
+	<!-- Optional; install.sh inserts when --user is passed -->
+	<!--USER_BLOCK-->
+
+	<key>RunAtLoad</key>
+	<true/>
+	<key>KeepAlive</key>
+	<true/>
+
+	<key>StandardOutPath</key>
+	<string>LOG_DIR_PLACEHOLDER/atsadvanced-gateway.log</string>
+	<key>StandardErrorPath</key>
+	<string>LOG_DIR_PLACEHOLDER/atsadvanced-gateway.err.log</string>
+
+	<key>ThrottleInterval</key>
+	<integer>5</integer>
+</dict>
+</plist>
