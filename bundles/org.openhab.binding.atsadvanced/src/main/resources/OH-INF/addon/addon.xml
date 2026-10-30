@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<addon:addon id="atsadvanced" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:addon="https://openhab.org/schemas/addon/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/addon/v1.0.0 https://openhab.org/schemas/addon-1.0.0.xsd">
+
+	<type>binding</type>
+	<name>ATS Advanced Binding</name>
+	<description>Connects openHAB to UTC/Carrier/FireClass ATS Advanced intrusion panels via the AtsAdvancedGateway
+		(.NET)
+		HTTP service and ats.advanced.drv. Supports areas, zones, outputs, RAS/DGP, system status, triggers, event
+		log, and
+		C&amp;C control sessions.</description>
+
+</addon:addon>

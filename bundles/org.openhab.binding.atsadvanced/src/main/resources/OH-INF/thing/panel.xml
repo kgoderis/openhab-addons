@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="atsadvanced"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Bridge Thing Type -->
+	<bridge-type id="panel">
+		<label>ATS Advanced Panel</label>
+		<description>This Bridge defines the ATS Advanced Alarm System Control panel</description>
+
+		<channels>
+			<channel id="monitor" typeId="monitor-channel"/>
+			<channel id="reset" typeId="reset-channel"/>
+			<channel id="confirmAlarm" typeId="confirm-alarm-channel"/>
+			<channel id="batteryTest" typeId="battery-test-channel"/>
+			<channel id="walkTest" typeId="panel-walktest-channel"/>
+			<channel id="logEntry" typeId="log-entry-channel"/>
+			<channel id="fetchLog" typeId="fetch-log-channel"/>
+			<channel id="logHistory" typeId="log-history-channel"/>
+			<channel id="fetchLogHistory" typeId="fetch-log-history-channel"/>
+		</channels>
+
+		<config-description>
+			<parameter name="ipAddress" type="text" required="true">
+				<label>Panel Address</label>
+				<description>Network address of the ATS Advanced panel</description>
+			</parameter>
+			<parameter name="portNumber" type="integer" required="true">
+				<label>Panel Port</label>
+				<description>TCP port number of the ATS Advanced panel</description>
+				<default>32000</default>
+			</parameter>
+			<parameter name="pin" type="integer" required="true">
+				<label>PIN</label>
+				<description>User PIN for the panel (one active session per PIN)</description>
+			</parameter>
+			<parameter name="gatewayUrl" type="text" required="true">
+				<label>Gateway URL</label>
+				<description>Base URL of the AtsAdvancedGateway HTTP service, e.g. http://127.0.0.1:18137</description>
+			</parameter>
+		</config-description>
+	</bridge-type>
+
+	<channel-type id="monitor-channel">
+		<item-type>String</item-type>
+		<label>Monitor</label>
+		<description>System monitor that contains a description of the most recent event that occurred at the ATS Advanced
+			panel</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="reset-channel">
+		<item-type>Switch</item-type>
+		<label>Engineer Reset</label>
+		<description>Trigger engineer reset (createCC.ENG_RES → GETCODE → DORESET). Send ON.</description>
+	</channel-type>
+	<channel-type id="confirm-alarm-channel">
+		<item-type>Switch</item-type>
+		<label>Confirm Alarms</label>
+		<description>Confirm outstanding alarms (createCC.A_CONFAL). Send ON.</description>
+	</channel-type>
+	<channel-type id="battery-test-channel">
+		<item-type>Switch</item-type>
+		<label>Battery Test</label>
+		<description>Start/cancel battery test (createCC.DEVICE / fnCC.BATTERY_TEST_*). ON=start, OFF=cancel.</description>
+	</channel-type>
+	<channel-type id="panel-walktest-channel">
+		<item-type>Switch</item-type>
+		<label>Walk Test</label>
+		<description>Start/stop panel walk-test for all areas (createCC.A_WALKTST). ON=start, OFF=stop.</description>
+	</channel-type>
+	<channel-type id="log-entry-channel">
+		<item-type>String</item-type>
+		<label>Log Entry</label>
+		<description>Last event read from the panel log (select.getLOG)</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="fetch-log-channel">
+		<item-type>Switch</item-type>
+		<label>Fetch Log</label>
+		<description>Read next log entry (first=latest, then older). Send ON.</description>
+	</channel-type>
+	<channel-type id="log-history-channel">
+		<item-type>String</item-type>
+		<label>Log History</label>
+		<description>Last 50 panel events (newest first), newline-separated. Filled from live monitor and/or
+			fetchLogHistory.</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="fetch-log-history-channel">
+		<item-type>Switch</item-type>
+		<label>Fetch Log History</label>
+		<description>Reload the last 50 events from the panel log into logHistory. Send ON.</description>
+	</channel-type>
+
+</thing:thing-descriptions>

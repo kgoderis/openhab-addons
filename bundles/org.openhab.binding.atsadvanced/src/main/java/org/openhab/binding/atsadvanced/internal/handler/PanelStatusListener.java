@@ -1,0 +1,41 @@
+/**
+ * Copyright (c) 2010-2026 Contributors to the openHAB project
+ *
+ * See the NOTICE file(s) distributed with this work for additional
+ * information.
+ *
+ * This program and the accompanying materials are made available under the
+ * terms of the Eclipse Public License 2.0 which is available at
+ * http://www.eclipse.org/legal/epl-2.0
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ */
+package org.openhab.binding.atsadvanced.internal.handler;
+
+import org.eclipse.jdt.annotation.NonNullByDefault;
+
+/**
+ * Callback for panel bridge connectivity changes.
+ * <p>
+ * Child thing handlers register with {@link PanelHandler#registerPanelStatusListener(PanelStatusListener)} so they
+ * can go OFFLINE when the gateway/panel session drops and refresh status when the bridge reconnects.
+ *
+ * @author Karel Goderis - Initial contribution
+ */
+@NonNullByDefault
+public interface PanelStatusListener {
+
+    /**
+     * Invoked when the panel session or gateway transport is lost.
+     *
+     * @param bridge the panel bridge handler
+     */
+    void onBridgeDisconnected(PanelHandler bridge);
+
+    /**
+     * Invoked when the full connect/login/monitor/log pipeline succeeded and the bridge is ONLINE.
+     *
+     * @param bridge the panel bridge handler
+     */
+    void onBridgeConnected(PanelHandler bridge);
+}

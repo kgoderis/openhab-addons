@@ -1,0 +1,26 @@
+[Unit]
+Description=ATS Advanced dumb gateway (.NET 8) for openHAB
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=openhab
+Group=openhab
+WorkingDirectory=/usr/local/opt/atsadvanced-gateway
+Environment=ATS_GATEWAY_HOME=/usr/local/opt/atsadvanced-gateway
+Environment=DOTNET_ROOT=/usr/share/dotnet
+Environment=ASPNETCORE_URLS=http://127.0.0.1:18137
+Environment=DOTNET_ENVIRONMENT=Production
+ExecStart=/usr/local/opt/atsadvanced-gateway/atsadvanced-gateway.sh
+Restart=on-failure
+RestartSec=5
+StandardOutput=append:/var/log/atsadvanced-gateway.log
+StandardError=append:/var/log/atsadvanced-gateway.err.log
+
+# Hardening (adjust if the gateway must open LAN sockets)
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

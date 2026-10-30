@@ -1,0 +1,108 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "AtsAdvancedGateway/1.0.0": {
+        "dependencies": {
+          "NAce.Api": "1.4.1.0",
+          "NAce.Ats": "1.4.1.0",
+          "NAce.Communication": "1.4.1.0",
+          "NAce.Message": "1.4.1.0",
+          "NAce.Utilities": "1.4.1.0"
+        },
+        "runtime": {
+          "AtsAdvancedGateway.dll": {}
+        }
+      },
+      "NAce.Api/1.4.1.0": {
+        "runtime": {
+          "NAce.Api.dll": {
+            "assemblyVersion": "1.4.1.0",
+            "fileVersion": "1.4.1.4012"
+          }
+        }
+      },
+      "NAce.Ats/1.4.1.0": {
+        "runtime": {
+          "NAce.Ats.dll": {
+            "assemblyVersion": "1.4.1.0",
+            "fileVersion": "1.4.1.4012"
+          }
+        }
+      },
+      "NAce.Communication/1.4.1.0": {
+        "runtime": {
+          "NAce.Communication.dll": {
+            "assemblyVersion": "1.4.1.0",
+            "fileVersion": "1.4.1.4012"
+          }
+        }
+      },
+      "NAce.Message/1.4.1.0": {
+        "runtime": {
+          "NAce.Message.dll": {
+            "assemblyVersion": "1.4.1.0",
+            "fileVersion": "1.4.1.4012"
+          }
+        }
+      },
+      "NAce.Utilities/1.4.1.0": {
+        "runtime": {
+          "NAce.Utilities.dll": {
+            "assemblyVersion": "1.4.1.0",
+            "fileVersion": "1.4.1.4012"
+          }
+        }
+      },
+      "NetCoreAsyncFireLib/1.0.0.0": {
+        "runtime": {
+          "NetCoreAsyncFireLib.dll": {
+            "assemblyVersion": "1.0.0.0",
+            "fileVersion": "1.0.0.0"
+          }
+        }
+      }
+    }
+  },
+  "libraries": {
+    "AtsAdvancedGateway/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NAce.Api/1.4.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NAce.Ats/1.4.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NAce.Communication/1.4.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NAce.Message/1.4.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NAce.Utilities/1.4.1.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "NetCoreAsyncFireLib/1.0.0.0": {
+      "type": "reference",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

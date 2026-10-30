@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="atsadvanced"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="dgp">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>DGP (Expander) Thing</label>
+		<description>Data gathering panel / expander status</description>
+		<channels>
+			<channel id="online" typeId="dgp-online-channel"/>
+			<channel id="tamper" typeId="dgp-tamper-channel"/>
+			<channel id="fault" typeId="dgp-fault-channel"/>
+			<channel id="status" typeId="dgp-status-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>DGP Number</label>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-type id="dgp-online-channel">
+		<item-type>Switch</item-type>
+		<label>Online</label>
+		<description>DGP is online (inverse of DGPEV_OFFLINE)</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="dgp-tamper-channel">
+		<item-type>Switch</item-type>
+		<label>Tamper</label>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="dgp-fault-channel">
+		<item-type>Switch</item-type>
+		<label>Fault</label>
+		<description>Mains or battery fault</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="dgp-status-channel">
+		<item-type>String</item-type>
+		<label>Status</label>
+		<state readOnly="true"/>
+	</channel-type>
+</thing:thing-descriptions>

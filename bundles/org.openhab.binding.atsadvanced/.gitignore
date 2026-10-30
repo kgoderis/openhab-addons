@@ -1,0 +1,14 @@
+# Intermediate .NET build output (committed runtime build lives in AtsAdvancedGateway/publish/)
+AtsAdvancedGateway/obj/
+AtsAdvancedGateway/bin/
+AtsAdvancedGateway/tools/**/obj/
+AtsAdvancedGateway/tools/**/bin/
+
+# Local / backup noise
+*.userprefs
+*.cache
+*.CopyComplete
+.DS_Store
+
+# Vendor panel/SDK manuals (kept on atsadvanced-docs only)
+doc/

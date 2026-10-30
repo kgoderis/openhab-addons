@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="atsadvanced"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<thing-type id="area">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="panel"/>
+		</supported-bridge-type-refs>
+		<label>Area Thing</label>
+		<description>Area / partition. Arming uses createCC.A_SET / A_UNSET / A_PARTSET control sessions.</description>
+		<channels>
+			<channel id="set" typeId="set-channel"/>
+			<channel id="forceset" typeId="forceset-channel"/>
+			<channel id="partset" typeId="partset-channel"/>
+			<channel id="alarm" typeId="area-alarm-channel"/>
+			<channel id="exit" typeId="exit-channel"/>
+			<channel id="status" typeId="area-status-channel"/>
+			<channel id="walkTest" typeId="area-walktest-channel"/>
+			<channel id="armPreview" typeId="arm-preview-channel"/>
+		</channels>
+		<config-description>
+			<parameter name="number" type="integer">
+				<label>Area Number</label>
+				<description>Unique number identifying the area/partition on the ATS Advanced Panel</description>
+				<required>true</required>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-type id="set-channel">
+		<item-type>Switch</item-type>
+		<label>Set</label>
+		<description>Fully set (arm) or unset the area (createCC.A_SET / A_UNSET)</description>
+	</channel-type>
+	<channel-type id="forceset-channel">
+		<item-type>Switch</item-type>
+		<label>Force Set</label>
+		<description>Force-arm the area (createCC.A_SET → fnCC.A_SET_FORCEDSET). ON only.</description>
+	</channel-type>
+	<channel-type id="partset-channel">
+		<item-type>Switch</item-type>
+		<label>Part Set</label>
+		<description>Part-set the area (createCC.A_PARTSET). ON only; OFF unsets.</description>
+	</channel-type>
+	<channel-type id="area-alarm-channel">
+		<item-type>Switch</item-type>
+		<label>Alarm</label>
+		<description>Area is in alarm state</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="exit-channel">
+		<item-type>Switch</item-type>
+		<label>Exit</label>
+		<description>Area is in exit timer state</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="area-status-channel">
+		<item-type>String</item-type>
+		<label>Status</label>
+		<description>Readable summary of active area flags</description>
+		<state readOnly="true"/>
+	</channel-type>
+	<channel-type id="area-walktest-channel">
+		<item-type>Switch</item-type>
+		<label>Walk Test</label>
+		<description>Start/stop walk-test for this area (createCC.A_WALKTST). ON=start, OFF=stop.</description>
+	</channel-type>
+	<channel-type id="arm-preview-channel">
+		<item-type>String</item-type>
+		<label>Arm Preview</label>
+		<description>Inhibit/block list before arming (createCC.A_STATE). Refresh to update.</description>
+		<state readOnly="true"/>
+	</channel-type>
+</thing:thing-descriptions>
